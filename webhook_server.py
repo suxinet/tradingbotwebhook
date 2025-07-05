@@ -1,19 +1,26 @@
+import os
 from flask import Flask, request
 import requests
+from dotenv import load_dotenv
+
+# Lade Umgebungsvariablen aus .env-Datei
+load_dotenv()
+
+# Telegram-Konfiguration über Umgebungsvariablen
+BOT_TOKEN = os.getenv("8028126368:AAHeNtl0OgxPYOEd0N1zKlU0TPUiBh0BxJY")
+CHAT_ID = int(os.getenv("780956531"))
+SECRET_KEY = os.getenv("meinGeheimerWebhookKey1")
 
 app = Flask(__name__)
 
-# Telegram-Konfiguration
-BOT_TOKEN = "8028126368:AAHPdzY5eM8C2eBleM135vnjmdqoEELBXpg"
-CHAT_ID = 780956531  # Deine Telegram-Chat-ID
-
-# Geheimer Schlüssel für Webhook-Zugriff
-SECRET_KEY = "meinSuperGeheimerWebhookKey123"
-
-def send_telegram_message(text):
+def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    data = {"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}
-    requests.post(url, data=data)
+    payload = {
+        "chat_id": CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML"
+    }
+    requests.post(url, json=payload)
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -27,27 +34,24 @@ def webhook():
         send_telegram_message("⚠️ Kein JSON empfangen.")
         return "No JSON", 400
 
-    required_fields = ["symbol", "direction", "rr", "entry", "sl", "tp", "kapitalEmpfehlung", "sma_fast", "sma_slow"]
-    if all(field in data for field in required_fields):
-        message = (
-            f"📡 *Trading Signal empfangen!*\n\n"
-            f"🪙 Symbol: {data['symbol']}\n"
-            f"📈 Richtung: {data['direction'].upper()}\n"
-            f"🎯 Entry: {data['entry']}\n"
-            f"🛑 Stop-Loss: {data['sl']}\n"
-            f"✅ Take-Profit: {data['tp']}\n"
-            f"📊 Risk/Reward: {data['rr']}\n"
-            f"📎 SMA Fast: {data['sma_fast']}\n"
-            f"📎 SMA Slow: {data['sma_slow']}\n"
-            f"💰 Kapitalempfehlung: {data['kapitalEmpfehlung']}"
-        )
-        send_telegram_message(message)
-        return "Signal verarbeitet", 200
-    else:
-        send_telegram_message("⚠️ Ungültiges Signalformat erhalten.")
+    required_fields = ["symbol", "direction", "rr", "entry", "sl", "tp", "sma_fast", "sma_slow", "kapitalEmpfehlung"]
+    if not all(field in data for field in required_fields):
+        send_telegram_message("⚠️ Fehlende Felder im JSON.")
         return "Fehlende Felder", 400
 
+    msg = f"📈 <b>Trading-Signal</b>\n" \
+          f"<b>Symbol:</b> {data['symbol']}\n" \
+          f"<b>Richtung:</b> {data['direction']}\n" \
+          f"<b>Entry:</b> {data['entry']}\n" \
+          f"<b>Stop Loss:</b> {data['sl']}\n" \
+          f"<b>Take Profit:</b> {data['tp']}\n" \
+          f"<b>CRV:</b> {data['rr']}\n" \
+          f"<b>SMA Fast:</b> {data['sma_fast']}\n" \
+          f"<b>SMA Slow:</b> {data['sma_slow']}\n" \
+          f"<b>Kapitalempfehlung:</b> {data['kapitalEmpfehlung']}"
+
+    send_telegram_message(msg)
+    return "OK", 200
+
 if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=False, port=5000, host="0.0.0.0")
