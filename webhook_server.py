@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Telegram-Konfiguration über Umgebungsvariablen
-BOT_TOKEN = os.getenv("8028126368:AAHeNtl0OgxPYOEd0N1zKlU0TPUiBh0BxJY")
-CHAT_ID = int(os.getenv("780956531"))
-SECRET_KEY = os.getenv("meinGeheimerWebhookKey1")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = int(os.getenv("CHAT_ID"))
+SECRET_KEY = os.getenv("SECRET_KEY")
+
 
 app = Flask(__name__)
 
