@@ -26,10 +26,11 @@ def send_telegram_message(message):
 @app.route("/webhook", methods=["POST"])
 def webhook():
     secret = request.headers.get("X-Secret-Key")
-    import sys
-sys.stderr.write(f"[DEBUG] Secret im Header: {secret}\n")
-sys.stderr.write(f"[DEBUG] SECRET_KEY aus ENV: {SECRET_KEY}\n")
     
+    import sys
+    sys.stderr.write(f"[DEBUG] Secret im Header: {secret}\n")
+    sys.stderr.write(f"[DEBUG] SECRET_KEY aus ENV: {SECRET_KEY}\n")
+
     if secret != SECRET_KEY:
         return "Forbidden", 403
 
