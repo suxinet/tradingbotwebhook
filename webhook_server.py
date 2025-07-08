@@ -24,17 +24,18 @@ def send_telegram_message(message):
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    secret = request.headers.get("X-Secret-Key")
-    sys.stderr.write(f"[DEBUG] Secret im Header: {secret}\n")
+    data = request.get_json()
+
+    if not data:
+        send_telegram_message("⚠️ Kein JSON empfangen.")
+        return "No JSON", 400
+
+    secret = data.get("secret")
+    sys.stderr.write(f"[DEBUG] Secret im JSON: {secret}\n")
     sys.stderr.write(f"[DEBUG] SECRET_KEY aus ENV: {SECRET_KEY}\n")
 
     if secret != SECRET_KEY:
         return "Forbidden", 403
-
-    data = request.get_json()
-    if not data:
-        send_telegram_message("⚠️ Kein JSON empfangen.")
-        return "No JSON", 400
 
     required_fields = ["symbol", "direction", "rr", "entry", "sl", "tp", "sma_fast", "sma_slow", "kapitalEmpfehlung"]
     if not all(field in data for field in required_fields):
